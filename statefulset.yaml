@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jenkins
+  namespace: jenkins
+spec:
+  serviceName: jenkins
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      serviceAccountName: jenkins
+
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts-jdk17
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 50000
+              name: jnlp
+
+          env:
+            - name: JAVA_OPTS
+              value: "-Djenkins.install.runSetupWizard=false"
+
+            - name: CASC_JENKINS_CONFIG
+              value: "/var/jenkins_home/casc_configs/casc-jenkins.yaml"
+
+            - name: JENKINS_ADMIN_ID
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-admin-secret
+                  key: JENKINS_ADMIN_ID
+
+            - name: JENKINS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-admin-secret
+                  key: JENKINS_ADMIN_PASSWORD
+
+            - name: JENKINS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-admin-secret
+                  key: JENKINS_URL
+
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /login
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: casc-config
+              mountPath: /var/jenkins_home/casc_configs
+            - name: plugins
+              mountPath: /usr/share/jenkins/ref
+            - name: plugins-cache
+              mountPath: /usr/share/jenkins/ref/plugins
+
+      volumes:
+        - name: casc-config
+          configMap:
+            name: jenkins-casc
+            items:
+              - key: casc-jenkins.yaml
+                path: casc-jenkins.yaml
+
+        - name: plugins
+          configMap:
+            name: jenkins-plugins
+            items:
+              - key: plugins.txt
+                path: plugins.txt
+
+        - name: plugins-cache
+          emptyDir: {}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: jenkins-home
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+

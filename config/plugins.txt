@@ -1,0 +1,11 @@
+# k8s/config/plugins.txt
+workflow-aggregator:latest
+configuration-as-code:latest
+job-dsl:latest
+git:latest
+git-client:latest
+matrix-auth:latest
+credentials-binding:latest
+pipeline-github-lib:latest
+blueocean:latest
+kubernetes:latest

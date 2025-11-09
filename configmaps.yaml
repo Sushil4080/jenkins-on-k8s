@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jenkins-casc
+  namespace: jenkins
+data:
+  casc-jenkins.yaml: |
+    jenkins:
+      systemMessage: |
+        Jenkins on Kubernetes — provisioned by JCasC.
+      remotingSecurity:
+        enabled: true
+      numExecutors: 2
+      mode: NORMAL
+      labelString: "master"
+      markupFormatter: plainText
+      disabledAdministrativeMonitors:
+        - "jenkins.diagnostics.RootUrlNotSetMonitor"
+
+    unclassified:
+      location:
+        url: ${JENKINS_URL}
+
+    security:
+      queueItemAuthenticator:
+        authenticators:
+          - global:
+              strategy: triggeringUsersAuthorizationStrategy
+      remotingCLI:
+        enabled: false
+
+    tool:
+      git:
+        installations:
+          - name: "Default"
+            home: "/usr/bin/git"
+
+    credentials:
+      system:
+        domainCredentials:
+          - credentials:
+              - usernamePassword:
+                  scope: GLOBAL
+                  id: "github-creds"
+                  username: "change-me"
+                  password: "change-me"
+                  description: "GitHub credentials"
+
+    securityRealm:
+      local:
+        allowsSignup: false
+        users:
+          - id: ${JENKINS_ADMIN_ID}
+            password: ${JENKINS_ADMIN_PASSWORD}
+
+    authorizationStrategy:
+      globalMatrix:
+        permissions:
+          - "Overall/Administer:${JENKINS_ADMIN_ID}"
+
+    jobs:
+      - script: |
+          pipelineJob('hello-kubernetes') {
+            definition {
+              cps {
+                script('''
+                  pipeline {
+                    agent any
+                    stages {
+                      stage('Hello') {
+                        steps {
+                          echo "Hello from Jenkins on Kubernetes!"
+                        }
+                      }
+                    }
+                  }
+                ''')
+                sandbox()
+              }
+            }
+          }
+
