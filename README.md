@@ -264,17 +264,3 @@ These can be implemented in future revisions:
 # 11. License
 
 This repository is available under the MIT License.
-
----
-
-# 12. Author
-
-**Sushil Maurya** – DevOps Engineer
-
-If you want, I can add:
-
-* A GitHub Actions badge
-* A pipeline diagram
-* Screenshots section
-* Auto‑generated Makefile for deployment
-* GitHub push commands
