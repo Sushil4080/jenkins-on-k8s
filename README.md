@@ -246,21 +246,3 @@ kubectl delete -n jenkins -f k8s/rbac.yaml
 kubectl delete -f k8s/namespace.yaml
 ```
 
----
-
-# 10. Recommended Enhancements
-
-These can be implemented in future revisions:
-
-* Helm chart packaging
-* Jenkins dynamic Kubernetes agents
-* Prometheus/Grafana monitoring
-* TLS-enabled Ingress
-* GitOps (ArgoCD) automation
-* Backup/restore strategy using Velero
-
----
-
-# 11. License
-
-This repository is available under the MIT License.
